@@ -12,7 +12,7 @@ require(data.table)
 ### Load table
 
 Nevada_Data_LONG_2013_2014 <- fread("Data/Base_Files/Nevada_Data_LONG_2013_2014.txt")
-
+EMH_LEVELs_2013_2014 <- fread("Data/Base_Files/EMH_LEVEL_2014.csv")
 
 ### Tidy up data
 
@@ -49,6 +49,20 @@ Nevada_Data_LONG_2013_2014[,DISTRICT_ENROLLMENT_STATUS:=factor(DISTRICT_ENROLLME
 Nevada_Data_LONG_2013_2014[,STATE_ENROLLMENT_STATUS:=factor(STATE_ENROLLMENT_STATUS)]
 
 Nevada_Data_LONG_2013_2014[,ACHIEVEMENT_LEVEL:=factor(ACHIEVEMENT_LEVEL, levels=c("Emergent/Developing", "Approaches Standard", "Meets Standard", "Exceeds Standard"), ordered=TRUE)]
+
+
+### Merge in EMH_LEVEL
+
+setnames(EMH_LEVELs_2013_2014, "Identifier", "EMH_LEVEL")
+EMH_LEVELs_2013_2014[,SCHOOL_NUMBER_3_DIGIT:=NULL]
+EMH_LEVELs_2013_2014[,GRADE:=as.character(GRADE)]
+EMH_LEVELs_2013_2014[EMH_LEVEL=="E", EMH_LEVEL:="Elementary"]
+EMH_LEVELs_2013_2014[EMH_LEVEL=="M", EMH_LEVEL:="Middle"]
+EMH_LEVELs_2013_2014[EMH_LEVEL=="H", EMH_LEVEL:="High"]
+setkey(EMH_LEVELs_2013_2014, DISTRICT_NUMBER, SCHOOL_NUMBER, GRADE)
+setkey(Nevada_Data_LONG_2013_2014, DISTRICT_NUMBER, SCHOOL_NUMBER, GRADE)
+Nevada_Data_LONG_2013_2014 <- EMH_LEVELs_2013_2014[Nevada_Data_LONG_2013_2014]
+Nevada_Data_LONG_2013_2014[,EMH_LEVEL:=as.factor(EMH_LEVEL)]
 
 
 ### Check for duplicate cases
